@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}My Tickets - IT Help Desk{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between pb-3 mb-4 border-bottom">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">My Support Tickets</h2>
+        <p class="text-muted mb-0">Browse and check progress on all technical tickets you have submitted.</p>
+    </div>
+    <div class="mt-3 mt-md-0">
+        <a href="{{ url_for('employee.create_ticket') }}" class="btn btn-primary px-3 py-2 fw-semibold">
+            <i class="bi bi-plus-lg me-1"></i> Create New Ticket
+        </a>
+    </div>
+</div>
+
+<!-- Filter Toolbar -->
+<div class="content-card mb-4">
+    <div class="content-card-body p-3">
+        <form method="GET" action="{{ url_for('employee.tickets') }}" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <label class="small text-muted fw-semibold">Status Filter</label>
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    {% for st in statuses %}
+                        <option value="{{ st }}" {% if selected_status == st %}selected{% endif %}>{{ st }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="small text-muted fw-semibold">Category Filter</label>
+                <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-secondary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel me-1"></i> Apply Filter
+                </button>
+                {% if selected_status or selected_category %}
+                    <a href="{{ url_for('employee.tickets') }}" class="btn btn-outline-secondary btn-sm">
+                        Clear
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tickets Table -->
+<div class="content-card">
+    <div class="content-card-header">
+        <span class="content-card-title"><i class="bi bi-list-check me-2 text-primary"></i>Tickets ({{ tickets|length }})</span>
+    </div>
+
+    {% if tickets %}
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Issue Summary</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Technician</th>
+                        <th>Created Date</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        <tr>
+                            <td>
+                                <span class="fw-bold text-dark">#{{ ticket.id }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('employee.ticket_detail', ticket_id=ticket.id) }}" class="fw-semibold text-dark text-decoration-none">
+                                    {{ ticket.title }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ ticket.category }}</span>
+                            </td>
+                            <td>
+                                <span class="badge-custom {{ ticket.priority_badge_class }}">
+                                    {{ ticket.priority }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge-custom {{ ticket.status_badge_class }}">
+                                    {{ ticket.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if ticket.technician %}
+                                    <span class="small fw-semibold text-dark"><i class="bi bi-person-check text-primary me-1"></i>{{ ticket.technician.name }}</span>
+                                {% else %}
+                                    <span class="text-muted small fst-italic">Awaiting Assignment</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">
+                                {{ ticket.created_at.strftime('%b %d, %Y') if ticket.created_at else 'N/A' }}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('employee.ticket_detail', ticket_id=ticket.id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
+            <h5 class="fw-bold text-dark mb-1">No Tickets Found</h5>
+            <p class="text-muted small mb-3">No support requests match your selected filters.</p>
+            <a href="{{ url_for('employee.tickets') }}" class="btn btn-outline-secondary btn-sm">
+                Reset Filters
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

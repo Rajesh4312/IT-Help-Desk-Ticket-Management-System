@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Create Support Ticket - IT Help Desk{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h3 class="fw-bold text-dark mb-1">Report Technical Problem</h3>
+                <p class="text-muted small mb-0">Submit a ticket to the IT support engineering team</p>
+            </div>
+            <a href="{{ url_for('employee.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="content-card">
+            <div class="content-card-header">
+                <span class="content-card-title"><i class="bi bi-file-earmark-medical me-2 text-primary"></i>Ticket Information</span>
+            </div>
+            <div class="content-card-body">
+                <form method="POST" action="{{ url_for('employee.create_ticket') }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-semibold">Problem Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ form_data.get('title', '') }}" placeholder="e.g. Laptop cannot connect to office Wi-Fi network" required autofocus>
+                        <div class="form-text">Provide a concise one-line summary of the technical problem.</div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="category" class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="" disabled {% if not form_data.get('category') %}selected{% endif %}>Select Problem Domain...</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}" {% if form_data.get('category') == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="priority" class="form-label fw-semibold">Severity / Priority <span class="text-danger">*</span></label>
+                            <select class="form-select" id="priority" name="priority" required>
+                                {% for prio in priorities %}
+                                    <option value="{{ prio }}" {% if form_data.get('priority', 'Medium') == prio %}selected{% endif %}>{{ prio }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-semibold">Detailed Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="6" placeholder="Describe what happened, any error messages displayed, when the issue started, and any steps you've already tried (e.g. restarting device)..." required>{{ form_data.get('description', '') }}</textarea>
+                        <div class="form-text">Include hardware asset tag, operating system, or error codes if known.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <a href="{{ url_for('employee.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            <i class="bi bi-send-check me-1"></i> Submit Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- IT Support Guidelines Sidebar -->
+    <div class="col-lg-4">
+        <div class="content-card mb-4">
+            <div class="content-card-header bg-light">
+                <span class="content-card-title text-muted fs-6"><i class="bi bi-lightbulb me-2 text-warning"></i>Tips for Quick Resolution</span>
+            </div>
+            <div class="content-card-body">
+                <ul class="list-unstyled mb-0 small text-secondary">
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                        <div><strong>Be specific:</strong> Include exact error numbers or messages shown on screen.</div>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                        <div><strong>Device info:</strong> Mention device model (e.g. Dell Latitude 5420, MacBook Pro).</div>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                        <div><strong>Impact:</strong> State if this halts company operations or affects multiple team members.</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="content-card-header bg-light">
+                <span class="content-card-title text-muted fs-6"><i class="bi bi-shield-check me-2 text-primary"></i>Service Level Agreement</span>
+            </div>
+            <div class="content-card-body small text-muted">
+                <p class="mb-2"><strong>Critical:</strong> Response within 30 minutes</p>
+                <p class="mb-2"><strong>High:</strong> Response within 2 hours</p>
+                <p class="mb-2"><strong>Medium:</strong> Response within 8 hours</p>
+                <p class="mb-0"><strong>Low:</strong> Response within 24 hours</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

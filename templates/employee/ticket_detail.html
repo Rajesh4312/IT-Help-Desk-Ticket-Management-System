@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket #{{ ticket.id }} - IT Help Desk{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between pb-3 mb-4 border-bottom">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="fs-4 fw-bold text-dark">Ticket #{{ ticket.id }}: {{ ticket.title }}</span>
+        </div>
+        <div class="text-muted small">
+            Submitted on {{ ticket.created_at.strftime('%B %d, %Y at %I:%M %p') if ticket.created_at else 'N/A' }}
+            {% if ticket.updated_at and ticket.updated_at != ticket.created_at %}
+                &middot; Last updated {{ ticket.updated_at.strftime('%B %d, %Y at %I:%M %p') }}
+            {% endif %}
+        </div>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2">
+        <a href="{{ url_for('employee.tickets') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to My Tickets
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Ticket Detail Content -->
+    <div class="col-lg-8">
+        <!-- Resolution Notes Banner (if present) -->
+        {% if ticket.resolution_notes %}
+            <div class="resolution-box">
+                <div class="resolution-box-title mb-2">
+                    <i class="bi bi-check-circle-fill"></i> IT Resolution Summary
+                </div>
+                <p class="mb-0 text-dark">{{ ticket.resolution_notes }}</p>
+            </div>
+        {% endif %}
+
+        <!-- Problem Description Card -->
+        <div class="content-card mb-4">
+            <div class="content-card-header">
+                <span class="content-card-title"><i class="bi bi-file-text me-2 text-primary"></i>Problem Description</span>
+            </div>
+            <div class="content-card-body">
+                <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ ticket.description }}</p>
+            </div>
+        </div>
+
+        <!-- Troubleshooting & Communication Timeline -->
+        <div class="content-card mb-4">
+            <div class="content-card-header">
+                <span class="content-card-title"><i class="bi bi-chat-left-text me-2 text-primary"></i>Ticket Discussion &amp; Updates</span>
+                <span class="badge bg-light text-secondary border">{{ ticket.comments|length }} entries</span>
+            </div>
+            <div class="content-card-body">
+                {% if ticket.comments %}
+                    <div class="timeline">
+                        {% for comment in ticket.comments %}
+                            <div class="timeline-item">
+                                <div class="timeline-badge {% if comment.user.is_technician() %}tech{% elif comment.comment.startswith('[') %}system{% endif %}">
+                                    <i class="bi {% if comment.user.is_technician() %}bi-tools{% else %}bi-person{% endif %}"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-header">
+                                        <span class="timeline-author">
+                                            {{ comment.user.name }}
+                                            <span class="badge {% if comment.user.is_technician() %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %} ms-1 small">
+                                                {{ comment.user.role|capitalize }}
+                                            </span>
+                                        </span>
+                                        <span class="timeline-time">
+                                            {{ comment.created_at.strftime('%b %d, %Y %I:%M %p') if comment.created_at else '' }}
+                                        </span>
+                                    </div>
+                                    <div class="text-dark small" style="white-space: pre-wrap;">{{ comment.comment }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small fst-italic mb-0">No updates or comments have been recorded on this ticket yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Add Reply Card -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <span class="content-card-title"><i class="bi bi-reply me-2 text-primary"></i>Provide Additional Information</span>
+            </div>
+            <div class="content-card-body">
+                <form method="POST" action="{{ url_for('employee.add_comment', ticket_id=ticket.id) }}">
+                    <div class="mb-3">
+                        <textarea class="form-control" name="comment" rows="3" placeholder="Provide extra troubleshooting details or reply to the IT support team..." required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary btn-sm px-3">
+                            <i class="bi bi-send me-1"></i> Send Reply
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Metadata Sidebar -->
+    <div class="col-lg-4">
+        <div class="content-card mb-4">
+            <div class="content-card-header">
+                <span class="content-card-title"><i class="bi bi-info-circle me-2 text-primary"></i>Ticket Status &amp; SLA</span>
+            </div>
+            <div class="content-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Current Status</label>
+                    <span class="badge-custom {{ ticket.status_badge_class }} fs-6">
+                        {{ ticket.status }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Priority Level</label>
+                    <span class="badge-custom {{ ticket.priority_badge_class }} fs-6">
+                        {{ ticket.priority }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Problem Category</label>
+                    <span class="badge bg-light text-dark border fs-6">
+                        {{ ticket.category }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Assigned Technician</label>
+                    {% if ticket.technician %}
+                        <div class="d-flex align-items-center mt-1">
+                            <i class="bi bi-person-badge text-primary me-2 fs-5"></i>
+                            <div>
+                                <div class="fw-semibold text-dark">{{ ticket.technician.name }}</div>
+                                <div class="text-muted small">{{ ticket.technician.email }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <span class="text-muted fst-italic small">Pending technician dispatch</span>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <div>
+                    <label class="text-muted small d-block">Reporter</label>
+                    <div class="fw-semibold text-dark">{{ ticket.employee.name }}</div>
+                    <div class="text-muted small">{{ ticket.employee.email }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

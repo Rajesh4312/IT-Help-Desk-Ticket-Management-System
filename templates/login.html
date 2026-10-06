@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - IT Help Desk{% endblock %}
+
+{% block unauth_content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="text-center mb-4">
+            <span class="brand-badge fs-6 mb-2 d-inline-block"><i class="bi bi-shield-lock-fill me-1"></i>SECURE ACCESS</span>
+            <h3 class="fw-bold text-dark mt-2 mb-1">Sign In to IT Portal</h3>
+            <p class="text-muted small">Enter your corporate credentials to continue</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+
+            <div class="mb-3">
+                <label for="email" class="form-label fw-semibold">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ email or '' }}" placeholder="name@company.com" required autofocus>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label fw-semibold">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+            </button>
+        </form>
+
+        <!-- Demo Credentials Helper -->
+        <div class="demo-credentials-box mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fw-bold text-dark"><i class="bi bi-info-circle me-1 text-primary"></i>Demo Accounts:</span>
+                <span class="badge bg-light text-secondary border">Click to Auto-fill</span>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm text-start" id="btn-fill-employee">
+                    <i class="bi bi-person-fill me-1 text-success"></i> <strong>Employee:</strong> employee@example.com
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm text-start" id="btn-fill-technician">
+                    <i class="bi bi-tools me-1 text-primary"></i> <strong>Technician:</strong> technician@example.com
+                </button>
+            </div>
+            <small class="text-muted d-block mt-2 text-center">Passwords: <code>Employee@123</code> / <code>Technician@123</code></small>
+        </div>
+
+        <div class="text-center mt-3">
+            <span class="text-muted small">New employee?</span>
+            <a href="{{ url_for('auth.register') }}" class="small fw-semibold text-primary text-decoration-none ms-1">Create an account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

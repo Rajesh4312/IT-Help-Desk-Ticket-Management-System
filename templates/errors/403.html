@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - 403 Forbidden{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 text-center">
+        <div class="display-1 text-danger fw-bold mb-3"><i class="bi bi-shield-x"></i> 403</div>
+        <h3 class="fw-bold text-dark mb-2">Access Denied</h3>
+        <p class="text-muted mb-4 lead">
+            You don't have permission to access this page or resource. This ticket or dashboard may belong to another user or require technician clearance.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('auth.index') }}" class="btn btn-primary">
+                <i class="bi bi-house-door me-1"></i> Return to Home
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-box-arrow-right me-1"></i> Switch Account
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block unauth_content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 text-center">
+        <div class="display-1 text-danger fw-bold mb-3"><i class="bi bi-shield-x"></i> 403</div>
+        <h3 class="fw-bold text-dark mb-2">Access Denied</h3>
+        <p class="text-muted mb-4 lead">
+            You don't have permission to access this page or resource.
+        </p>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Go to Login
+        </a>
+    </div>
+</div>
+{% endblock %}

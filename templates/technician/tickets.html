@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Tickets - IT Support Console{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between pb-3 mb-4 border-bottom">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Ticket Management &amp; Queue</h2>
+        <p class="text-muted mb-0">Search, filter, assign, and manage enterprise IT support requests.</p>
+    </div>
+</div>
+
+<!-- Search & Compound Filter Bar -->
+<div class="content-card mb-4">
+    <div class="content-card-body p-3">
+        <form method="GET" action="{{ url_for('technician.tickets') }}">
+            <div class="row g-2 align-items-center">
+                <!-- Search Query Input -->
+                <div class="col-lg-4 col-md-12">
+                    <label class="small text-muted fw-semibold">Search Tickets</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" name="q" value="{{ search_query }}" placeholder="Ticket ID, Employee name, or issue keywords...">
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-lg-2 col-md-4">
+                    <label class="small text-muted fw-semibold">Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        {% for st in statuses %}
+                            <option value="{{ st }}" {% if selected_status == st %}selected{% endif %}>{{ st }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Priority Filter -->
+                <div class="col-lg-2 col-md-4">
+                    <label class="small text-muted fw-semibold">Priority</label>
+                    <select name="priority" class="form-select form-select-sm">
+                        <option value="">All Priorities</option>
+                        {% for pr in priorities %}
+                            <option value="{{ pr }}" {% if selected_priority == pr %}selected{% endif %}>{{ pr }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="col-lg-2 col-md-4">
+                    <label class="small text-muted fw-semibold">Category</label>
+                    <select name="category" class="form-select form-select-sm">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="col-lg-2 col-md-12 d-flex align-items-end gap-2 pt-md-3 pt-lg-0">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="bi bi-funnel-fill me-1"></i> Filter
+                    </button>
+                    {% if search_query or selected_status or selected_priority or selected_category %}
+                        <a href="{{ url_for('technician.tickets') }}" class="btn btn-outline-secondary btn-sm" title="Clear All Filters">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        <!-- Quick Filter Pills -->
+        <div class="mt-3 pt-2 border-top d-flex flex-wrap align-items-center gap-2">
+            <span class="small text-muted fw-semibold me-1">Quick Presets:</span>
+            <a href="{{ url_for('technician.tickets') }}" class="filter-pill {% if not search_query and not selected_status and not selected_priority and not selected_category %}active{% endif %}">
+                All Tickets
+            </a>
+            <a href="{{ url_for('technician.tickets', status='Open') }}" class="filter-pill {% if selected_status == 'Open' %}active{% endif %}">
+                <i class="bi bi-circle-fill text-primary small me-1"></i> Open Queue
+            </a>
+            <a href="{{ url_for('technician.tickets', status='In Progress') }}" class="filter-pill {% if selected_status == 'In Progress' %}active{% endif %}">
+                <i class="bi bi-circle-fill text-warning small me-1"></i> In Progress
+            </a>
+            <a href="{{ url_for('technician.tickets', priority='Critical') }}" class="filter-pill {% if selected_priority == 'Critical' %}active{% endif %}">
+                <i class="bi bi-fire text-danger me-1"></i> Critical Only
+            </a>
+            <a href="{{ url_for('technician.tickets', priority='High') }}" class="filter-pill {% if selected_priority == 'High' %}active{% endif %}">
+                <i class="bi bi-exclamation-triangle text-warning me-1"></i> High Priority
+            </a>
+            <a href="{{ url_for('technician.tickets', status='Resolved') }}" class="filter-pill {% if selected_status == 'Resolved' %}active{% endif %}">
+                <i class="bi bi-check2 text-success me-1"></i> Resolved
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket Queue Table -->
+<div class="content-card">
+    <div class="content-card-header">
+        <span class="content-card-title">
+            <i class="bi bi-ticket-detailed me-2 text-primary"></i>Matching Tickets
+            <span class="badge bg-secondary-subtle text-secondary ms-2">{{ tickets|length }} results</span>
+        </span>
+    </div>
+
+    {% if tickets %}
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Employee</th>
+                        <th>Issue Summary</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Assigned Technician</th>
+                        <th>Created</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        <tr>
+                            <td>
+                                <span class="fw-bold text-dark">#{{ ticket.id }}</span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">{{ ticket.employee.name }}</div>
+                                <div class="text-muted small">{{ ticket.employee.email }}</div>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('technician.ticket_detail', ticket_id=ticket.id) }}" class="fw-semibold text-dark text-decoration-none">
+                                    {{ ticket.title }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ ticket.category }}</span>
+                            </td>
+                            <td>
+                                <span class="badge-custom {{ ticket.priority_badge_class }}">
+                                    {{ ticket.priority }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge-custom {{ ticket.status_badge_class }}">
+                                    {{ ticket.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if ticket.technician %}
+                                    <span class="small fw-semibold text-dark">
+                                        <i class="bi bi-person-check text-primary me-1"></i>{{ ticket.technician.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                        Unassigned
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">
+                                {{ ticket.created_at.strftime('%b %d, %Y') if ticket.created_at else 'N/A' }}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('technician.ticket_detail', ticket_id=ticket.id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-sliders me-1"></i> Manage
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
+            <h5 class="fw-bold text-dark mb-1">No Tickets Found</h5>
+            <p class="text-muted small mb-3">No support tickets match the current search query and compound filters.</p>
+            <a href="{{ url_for('technician.tickets') }}" class="btn btn-primary btn-sm px-3">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Clear All Filters
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

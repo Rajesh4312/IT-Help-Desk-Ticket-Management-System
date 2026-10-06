@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - IT Help Desk{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h3 class="fw-bold text-dark mb-1">User Profile</h3>
+                <p class="text-muted small mb-0">System account details and role permissions</p>
+            </div>
+            <a href="{% if user.is_technician() %}{{ url_for('technician.dashboard') }}{% else %}{{ url_for('employee.dashboard') }}{% endif %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="content-card mb-4">
+            <div class="content-card-header">
+                <span class="content-card-title"><i class="bi bi-person-badge me-2 text-primary"></i>Account Information</span>
+                <span class="badge {% if user.is_technician() %}bg-primary{% else %}bg-secondary{% endif %}">
+                    {{ user.role|upper }}
+                </span>
+            </div>
+            <div class="content-card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block">Full Name</label>
+                        <span class="fw-semibold text-dark fs-6">{{ user.name }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block">Email Address</label>
+                        <span class="fw-semibold text-dark fs-6">{{ user.email }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block">System Role</label>
+                        <span class="fw-semibold text-dark fs-6">
+                            {% if user.is_technician() %}
+                                IT Support Technician (Full Ticket Management &amp; Triage Access)
+                            {% else %}
+                                Standard Employee (Ticket Reporting &amp; Self-Service Tracking)
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block">Member Since</label>
+                        <span class="fw-semibold text-dark fs-6">{{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Stats Card -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <span class="content-card-title"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Activity Overview</span>
+            </div>
+            <div class="content-card-body">
+                <div class="row text-center g-3">
+                    {% if user.is_employee() %}
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded">
+                                <div class="fs-4 fw-bold text-dark">{{ stats.total_tickets or 0 }}</div>
+                                <div class="small text-muted">Total Tickets Submitted</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded">
+                                <div class="fs-4 fw-bold text-primary">{{ stats.open_tickets or 0 }}</div>
+                                <div class="small text-muted">Awaiting Resolution</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded">
+                                <div class="fs-4 fw-bold text-success">{{ stats.resolved_tickets or 0 }}</div>
+                                <div class="small text-muted">Resolved Tickets</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded">
+                                <div class="fs-4 fw-bold text-dark">{{ stats.assigned_tickets or 0 }}</div>
+                                <div class="small text-muted">Total Assigned Incidents</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded">
+                                <div class="fs-4 fw-bold text-warning">{{ stats.active_tickets or 0 }}</div>
+                                <div class="small text-muted">Active Work-in-Progress</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
